@@ -1,6 +1,6 @@
 Name:             rtkit
 Version:          0.11
-Release:          28%{?dist}
+Release:          29%{?dist}
 Summary:          Realtime Policy and Watchdog Daemon
 # The daemon itself is GPLv3+, the reference implementation for the client BSD
 License:          GPLv3+ and BSD
@@ -9,11 +9,14 @@ Requires:         dbus
 Requires:         polkit
 BuildRequires:    make
 BuildRequires:    systemd-devel
+BuildRequires:    systemd-rpm-macros
 BuildRequires:    dbus-devel >= 1.2
 BuildRequires:    libcap-devel
 BuildRequires:    polkit-devel
 BuildRequires:    autoconf automake libtool
+%{?sysusers_requires_compat}
 Source0:          http://0pointer.de/public/%{name}-%{version}.tar.xz
+Source1:          rtkit.sysusers
 Patch1:           rtkit-mq_getattr.patch
 Patch2:           0001-SECURITY-Pass-uid-of-caller-to-polkit.patch
 Patch3:           rtkit-controlgroup.patch
@@ -44,21 +47,10 @@ autoreconf -fvi
 %install
 %make_install
 install -Dm0644 org.freedesktop.RealtimeKit1.xml %{buildroot}%{_datadir}/dbus-1/interfaces/org.freedesktop.RealtimeKit1.xml
+install -Dpm 0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/rtkit.conf
 
 %pre
-getent group rtkit >/dev/null 2>&1 || groupadd \
-        -r \
-        -g 172 \
-        rtkit
-getent passwd rtkit >/dev/null 2>&1 || useradd \
-        -r -l \
-        -u 172 \
-        -g rtkit \
-        -d /proc \
-        -s /sbin/nologin \
-        -c "RealtimeKit" \
-        rtkit
-:;
+%sysusers_create_compat %{SOURCE1}
 
 %post
 %systemd_post rtkit-daemon.service
@@ -80,8 +72,12 @@ dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesk
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/org.freedesktop.RealtimeKit1.conf
 %{_prefix}/lib/systemd/system/rtkit-daemon.service
 %{_mandir}/man8/*
+%{_sysusersdir}/rtkit.conf
 
 %changelog
+* Fri Aug 16 2024 Michal Sekletar <msekleta@redhat.com> - 0.11-29
+- migrate rtkit to systemd-sysusers (RHEL-5843)
+
 * Tue Aug 10 2021 Mohan Boddu <mboddu@redhat.com> - 0.11-28
 - Rebuilt for IMA sigs, glibc 2.34, aarch64 flags
   Related: rhbz#1991688
