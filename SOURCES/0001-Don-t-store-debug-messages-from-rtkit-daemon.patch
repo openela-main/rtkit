@@ -1,0 +1,24 @@
+From 0ced1f81d7e14e042f0c300011659a3eae0df3c3 Mon Sep 17 00:00:00 2001
+From: Michal Sekletar <msekleta@redhat.com>
+Date: Tue, 13 Aug 2024 21:09:57 +0200
+Subject: [PATCH] Don't store debug messages from rtkit-daemon
+
+---
+ rtkit-daemon.service.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/rtkit-daemon.service.in b/rtkit-daemon.service.in
+index d0dc786..7a80d33 100644
+--- a/rtkit-daemon.service.in
++++ b/rtkit-daemon.service.in
+@@ -26,6 +26,7 @@ NotifyAccess=main
+ CapabilityBoundingSet=CAP_SYS_NICE CAP_DAC_READ_SEARCH CAP_SYS_PTRACE CAP_SYS_CHROOT CAP_SETGID CAP_SETUID
+ PrivateTmp=yes
+ PrivateNetwork=yes
++LogLevelMax=info
+ 
+ [Install]
+ WantedBy=graphical.target
+-- 
+2.45.2
+
